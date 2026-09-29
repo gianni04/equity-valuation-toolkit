@@ -1,56 +1,67 @@
 # Equity Valuation Toolkit
 
-Valorisation d'actions en Python : DCF (WACC par CAPM, valeur terminale de Gordon), comparables EV/EBITDA et grille de sensibilité, appliqués à un panier de 10 grandes capitalisations US.
+Stock valuation in Python: DCF (WACC from CAPM, Gordon terminal value),
+EV/EBITDA comparables and a sensitivity table, on 10 large US stocks.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Data](https://img.shields.io/badge/data-Yahoo%20Finance-purple) ![License](https://img.shields.io/badge/License-MIT-green)
 
-## Ce que fait le projet
+## What it does
 
-Reproduit en version simplifiée les deux méthodes de valorisation d'un analyste sell-side, puis classe le panier par potentiel de hausse/baisse.
+- **DCF:** free cash flow projected over 5 years, discounted at the WACC (cost
+  of equity from CAPM, after-tax cost of debt), Gordon terminal value with
+  2.5% growth.
+- **Comparables:** the median EV/EBITDA of the group applied to each
+  company's EBITDA.
+- **Sensitivity:** DCF value per share across WACC and terminal growth, for
+  the largest stock in the group.
 
-- **DCF** : projection du free cash flow sur 5 ans, actualisation au WACC (coût des fonds propres par CAPM, coût de la dette après impôt), valeur terminale de Gordon (g = 2,5 %).
-- **Comparables** : application du multiple EV/EBITDA médian du panier à l'EBITDA de chaque société.
-- **Sensibilité** : grille de valeur DCF selon le WACC et le taux de croissance terminal, pour la plus grosse capitalisation du panier.
+Universe: AAPL, MSFT, GOOGL, JPM, XOM, JNJ, PG, KO, NVDA, UNH.
 
-Univers : AAPL, MSFT, GOOGL, JPM, XOM, JNJ, PG, KO, NVDA, UNH.
-
-## Quickstart
+## Run
 
 ```bash
 pip install -r requirements.txt
 python equity_valuation.py
 ```
 
-Les résultats sont écrits dans `output/`.
+Results are written to `output/`.
 
-## Résultats
+## Results
 
-![Screening de valorisation](output/valuation_screen.png)
+![Valuation screen](output/valuation_screen.png)
 
-| Ticker | Cours | WACC | Valeur DCF | Potentiel DCF | Valeur comps | Potentiel comps |
+| Ticker | Price | WACC | DCF value | DCF upside | Comps value | Comps upside |
 |---|---:|---:|---:|---:|---:|---:|
-| XOM | 153,04 | 4,8 % | 320,69 | +109,5 % | 310,01 | +102,6 % |
-| UNH | 407,08 | 6,6 % | 545,97 | +34,1 % | 471,69 | +15,9 % |
-| PG | 145,79 | 5,7 % | 167,40 | +14,8 % | 195,25 | +33,9 % |
-| JNJ | 259,24 | 5,1 % | 296,25 | +14,3 % | 268,73 | +3,7 % |
-| AAPL | 313,33 | 9,3 % | 148,66 | −52,6 % | 221,55 | −29,3 % |
-| NVDA | 223,96 | 15,0 % | 24,12 | −89,2 % | 134,11 | −40,1 % |
+| XOM | 153.04 | 4.8% | 320.69 | +109.5% | 310.01 | +102.6% |
+| UNH | 407.08 | 6.6% | 545.97 | +34.1% | 471.69 | +15.9% |
+| PG | 145.79 | 5.7% | 167.40 | +14.8% | 195.25 | +33.9% |
+| JNJ | 259.24 | 5.1% | 296.25 | +14.3% | 268.73 | +3.7% |
+| AAPL | 313.33 | 9.3% | 148.66 | -52.6% | 221.55 | -29.3% |
+| NVDA | 223.96 | 15.0% | 24.12 | -89.2% | 134.11 | -40.1% |
 
-Grille de sensibilité NVDA (valeur par action, `output/sensitivity_NVDA.csv`) : de **19,9 $** (WACC 17 %, g 1,5 %) à **31,0 $** (WACC 13 %, g 3,5 %).
+NVDA sensitivity (value per share, `output/sensitivity_NVDA.csv`): from
+$19.9 (WACC 17%, g 1.5%) to $31.0 (WACC 13%, g 3.5%).
 
-## Lecture critique
+## How to read these numbers
 
-Les écarts extrêmes sont instructifs plus que prescriptifs :
+The extreme gaps say more about the method than about the stocks:
 
-- **Valeurs de croissance** (NVDA, MSFT, AAPL) : un DCF à 5 ans avec croissance terminale de 2,5 % ne capture pas une croissance attendue à deux chiffres, d'où des valeurs très inférieures au cours. Le marché intègre des hypothèses de croissance bien plus élevées.
-- **WACC bas** (XOM ~4,8 %) : un beta faible fait mécaniquement exploser la valeur terminale ; en pratique on appliquerait un plancher de prime de risque.
-- **JPM sans valeur** : Yahoo Finance ne fournit ni free cash flow ni EBITDA exploitables pour une banque. Surtout, le DCF sur free cash flow et l'EV/EBITDA ne s'appliquent pas aux banques (la dette est une matière première, pas un financement). Une banque se valorise en P/B, P/E ou par dividend discount model.
-- Données Yahoo Finance réelles mais non normalisées (pas de consensus analystes, pas de retraitement des éléments exceptionnels).
+- **Growth stocks** (NVDA, MSFT, AAPL): a 5-year DCF with 2.5% terminal
+  growth cannot capture double-digit expected growth, so the values are far
+  below the market price.
+- **Low WACC** (XOM, about 4.8%): a low beta pushes the terminal value up a
+  lot. In practice a floor on the risk premium would be used.
+- **JPM has no value:** Yahoo Finance gives no usable free cash flow or
+  EBITDA for a bank, and these methods do not apply to banks anyway (debt is
+  part of the business, not just financing). Banks are valued on P/B, P/E or
+  dividends.
+- Yahoo Finance data is real but not adjusted (no analyst consensus, no
+  one-off items removed).
 
 ## Stack
 
-`Python` · `NumPy` · `pandas` · `SciPy` · `Matplotlib` · `yfinance`
+Python, NumPy, pandas, SciPy, Matplotlib, yfinance
 
-## Licence
+## License
 
-MIT — voir [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
