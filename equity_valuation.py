@@ -11,7 +11,7 @@ two classic sell-side methods, then screen the basket by upside/downside.
 3) Sensitivity table: DCF value grid across WACC and terminal growth
    assumptions, for the largest name in the basket.
 
-Data source: Yahoo Finance fundamentals (real, but simplified - a real
+Data source: Yahoo Finance fundamentals (real, but simplified: a
 Rothschild-style model would also use analyst consensus estimates and
 normalize one-off items, which is out of scope here).
 """
@@ -21,9 +21,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import yfinance as yf
 
-# ----------------------------------------------------------------------
-# 1. CONFIG
-# ----------------------------------------------------------------------
 
 UNIVERSE = ["AAPL", "MSFT", "GOOGL", "JPM", "XOM", "JNJ", "PG", "KO", "NVDA", "UNH"]
 
@@ -37,10 +34,6 @@ TERMINAL_GROWTH = 0.025      # long-run GDP-like growth assumption
 
 OUTPUT_DIR = "output"
 
-
-# ----------------------------------------------------------------------
-# 2. DATA
-# ----------------------------------------------------------------------
 
 def fetch_fundamentals(ticker):
     """Pull the raw inputs needed for the DCF and comps from Yahoo Finance."""
@@ -60,10 +53,6 @@ def fetch_fundamentals(ticker):
     }
 
 
-# ----------------------------------------------------------------------
-# 3. WACC
-# ----------------------------------------------------------------------
-
 def compute_wacc(row):
     """CAPM cost of equity + after-tax cost of debt, weighted by capital structure."""
     cost_of_equity = RISK_FREE_RATE + row["beta"] * MARKET_RISK_PREMIUM
@@ -81,10 +70,6 @@ def compute_wacc(row):
     wacc = weight_equity * cost_of_equity + weight_debt * COST_OF_DEBT * (1 - TAX_RATE)
     return wacc
 
-
-# ----------------------------------------------------------------------
-# 4. DCF MODEL
-# ----------------------------------------------------------------------
 
 def project_fcf(fcf0, growth_stage1, years, terminal_growth):
     """Fade the growth rate linearly from stage-1 growth down to terminal growth."""
@@ -124,10 +109,6 @@ def dcf_value(row, wacc, forecast_years=FORECAST_YEARS, terminal_growth=TERMINAL
     return value_per_share, enterprise_value
 
 
-# ----------------------------------------------------------------------
-# 5. COMPARABLE MULTIPLES (COMPS)
-# ----------------------------------------------------------------------
-
 def comps_value(df):
     """Apply the peer-group median EV/EBITDA multiple to each company's own EBITDA."""
     df = df.copy()
@@ -141,10 +122,6 @@ def comps_value(df):
 
     return implied_price, peer_median_multiple
 
-
-# ----------------------------------------------------------------------
-# 6. SENSITIVITY TABLE
-# ----------------------------------------------------------------------
 
 def sensitivity_table(row, base_wacc):
     wacc_range = np.linspace(base_wacc - 0.02, base_wacc + 0.02, 5)
@@ -165,16 +142,11 @@ def sensitivity_table(row, base_wacc):
     return grid
 
 
-# ----------------------------------------------------------------------
-# 7. MAIN
-# ----------------------------------------------------------------------
-
 def main():
     print("Downloading fundamentals for:", UNIVERSE)
     rows = [fetch_fundamentals(t) for t in UNIVERSE]
     df = pd.DataFrame(rows).set_index("ticker")
 
-    # --- DCF for every stock in the universe ---
     dcf_prices, ev_list, wacc_list = [], [], []
     for ticker, row in df.iterrows():
         wacc = compute_wacc(row)
@@ -187,7 +159,6 @@ def main():
     df["dcf_value_per_share"] = dcf_prices
     df["dcf_upside"] = df["dcf_value_per_share"] / df["price"] - 1
 
-    # --- comps for every stock in the universe ---
     comps_prices, peer_multiple = comps_value(df)
     df["comps_value_per_share"] = comps_prices
     df["comps_upside"] = df["comps_value_per_share"] / df["price"] - 1
@@ -198,13 +169,11 @@ def main():
     screen.to_csv(f"{OUTPUT_DIR}/valuation_screen.csv")
     print(f"\nPeer-group median EV/EBITDA multiple used for comps: {peer_multiple:.2f}x")
 
-    # --- sensitivity table for the largest name in the basket ---
     biggest_ticker = df["market_cap"].idxmax()
     grid = sensitivity_table(df.loc[biggest_ticker], df.loc[biggest_ticker, "wacc"])
     print(f"\nDCF sensitivity table for {biggest_ticker} (value per share):\n", grid.round(1))
     grid.to_csv(f"{OUTPUT_DIR}/sensitivity_{biggest_ticker}.csv")
 
-    # --- upside/downside bar chart ---
     plt.figure(figsize=(10, 6))
     colors = ["green" if v > 0 else "red" for v in screen["dcf_upside"]]
     plt.barh(screen.index, screen["dcf_upside"] * 100, color=colors)
