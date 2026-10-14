@@ -3,6 +3,8 @@
 Stock valuation in Python: DCF (WACC from CAPM, Gordon terminal value),
 EV/EBITDA comparables and a sensitivity table, on 10 large US stocks.
 
+A short note with the method and results: [note/equity-valuation-toolkit.pdf](note/equity-valuation-toolkit.pdf).
+
 ![Python](https://img.shields.io/badge/Python-3.10+-blue) ![Data](https://img.shields.io/badge/data-Yahoo%20Finance-purple) ![License](https://img.shields.io/badge/License-MIT-green)
 
 ## What it does
