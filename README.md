@@ -10,8 +10,8 @@ A short note with the method and results: [note/equity-valuation-toolkit.pdf](no
 ## What it does
 
 - **DCF:** free cash flow projected over 5 years, discounted at the WACC (cost
-  of equity from CAPM, after-tax cost of debt), Gordon terminal value with
-  2.5% growth.
+  of equity from CAPM (Sharpe, 1964), after-tax cost of debt), Gordon
+  growth terminal value (Gordon, 1959) with 2.5% growth.
 - **Comparables:** the median EV/EBITDA of the group applied to each
   company's EBITDA.
 - **Sensitivity:** DCF value per share across WACC and terminal growth, for
@@ -67,3 +67,9 @@ Python, NumPy, pandas, SciPy, Matplotlib, yfinance
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+## References
+
+Gordon, M. J. (1959). Dividends, earnings, and stock prices. The Review of Economics and Statistics, 41(2), 99-105. https://doi.org/10.2307/1927792
+
+Sharpe, W. F. (1964). Capital asset prices: a theory of market equilibrium under conditions of risk. The Journal of Finance, 19(3), 425-442. https://doi.org/10.2307/2977928
